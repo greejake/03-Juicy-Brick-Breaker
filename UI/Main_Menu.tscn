@@ -1,0 +1,106 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://UI/Main_Menu.gd" type="Script" id=1]
+[ext_resource path="res://UI/UI.tres" type="Theme" id=2]
+[ext_resource path="res://Assets/LeagueGothic-Regular.ttf" type="DynamicFontData" id=3]
+[ext_resource path="res://Ball/Ball.tscn" type="PackedScene" id=4]
+[ext_resource path="res://UI/Boundary.gd" type="Script" id=5]
+[ext_resource path="res://Assets/wall.wav" type="AudioStream" id=6]
+
+[sub_resource type="Shader" id=2]
+code = "shader_type canvas_item;
+
+uniform vec4 color_gap: hint_color = vec4(0.25);
+uniform vec4 color_stripe: hint_color = vec4(1.0, 0.75, 0.0, 1.0);
+uniform float divisions = 8.0; // increase for more stripe density
+uniform float stripe_bias = 2.5; // 1.0 means no stripes; 2.0 means stripes and gaps are equal size
+uniform float speed = 0.1;
+uniform float angle = 0.7854; // in radians
+
+void fragment() {
+	float w = cos(angle) * UV.x + sin(angle) * UV.y - speed * TIME;
+	if (floor(mod(w * divisions, stripe_bias)) < 0.0001) {
+		COLOR = color_gap;
+	} else {
+		COLOR = color_stripe;
+	}
+}"
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = SubResource( 2 )
+shader_param/color_gap = Color( 0.25, 0.25, 0.25, 0.25 )
+shader_param/color_stripe = Color( 1, 0.75, 0, 1 )
+shader_param/divisions = 8.0
+shader_param/stripe_bias = 2.5
+shader_param/speed = 0.1
+shader_param/angle = 0.7854
+
+[sub_resource type="DynamicFont" id=1]
+size = 65
+font_data = ExtResource( 3 )
+
+[node name="Main_Menu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 2 )
+script = ExtResource( 1 )
+
+[node name="Boundary" type="StaticBody2D" parent="."]
+script = ExtResource( 5 )
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Boundary"]
+polygon = PoolVector2Array( 1023, 4, 1022, 799, 0, 799, 1, 3, -83, 3, -81, 869, 1128, 877, 1117, -71, -89, -89, -83, 1, -1, 1, -3, 2, 2, 0, 0, 1 )
+
+[node name="Background" type="ColorRect" parent="."]
+material = SubResource( 3 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0.501961 )
+
+[node name="Ball" parent="." instance=ExtResource( 4 )]
+position = Vector2( 200, 200 )
+linear_velocity = Vector2( 800, 550 )
+
+[node name="Ball2" parent="." instance=ExtResource( 4 )]
+position = Vector2( 760, 560 )
+linear_velocity = Vector2( -100, -500 )
+
+[node name="Label" type="Label" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = -300.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 1 )
+text = "Quite the Incredibly Juicy
+Brick Breaker Game"
+align = 1
+valign = 1
+
+[node name="Play" type="Button" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -100.0
+margin_top = -20.0
+margin_right = 100.0
+margin_bottom = 20.0
+text = "Play"
+
+[node name="Quit" type="Button" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -100.0
+margin_top = 50.0
+margin_right = 100.0
+margin_bottom = 90.0
+text = "Quit"
+
+[node name="Sound_Ball" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )
+
+[connection signal="pressed" from="Play" to="." method="_on_Play_pressed"]
+[connection signal="pressed" from="Quit" to="." method="_on_Quit_pressed"]
